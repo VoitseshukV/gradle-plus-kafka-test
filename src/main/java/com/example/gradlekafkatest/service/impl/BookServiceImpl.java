@@ -4,6 +4,7 @@ import com.example.gradlekafkatest.dto.BookDto;
 import com.example.gradlekafkatest.dto.BookDtoWithoutCategoryIds;
 import com.example.gradlekafkatest.dto.CreateBookRequestDto;
 import com.example.gradlekafkatest.exception.EntityNotFoundException;
+import com.example.gradlekafkatest.kafka.KafkaProducer;
 import com.example.gradlekafkatest.mapper.BookMapper;
 import com.example.gradlekafkatest.model.Book;
 import com.example.gradlekafkatest.repository.BookRepository;
@@ -20,10 +21,13 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
     private final BookMapper bookMapper;
+    private final KafkaProducer producer;
 
     @Override
-    public BookDto save(CreateBookRequestDto bookDto) {
-        return bookMapper.toDto(bookRepository.save(bookMapper.toModel(bookDto)));
+    public BookDto save(CreateBookRequestDto createBookDto) {
+        BookDto bookDto = bookMapper.toDto(bookRepository.save(bookMapper.toModel(createBookDto)));
+        producer.send(bookDto);
+        return bookDto;
     }
 
     @Override
